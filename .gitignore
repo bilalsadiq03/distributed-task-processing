@@ -1,9 +1,23 @@
-node_modules/
-dist/
+# Environment
 .env
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Testing
 coverage/
+
+# Logs
 *.log
 
+# AI coding tools
+.agents/
+.claude/
+.windsurf/
+
+# OS
 .DS_Store
 Thumbs.db
-/src/generated/prisma
