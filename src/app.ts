@@ -1,16 +1,18 @@
 import Fastify from "fastify";
 import prismaPlugin from "./infrastructure/database/prisma.plugin";
 import redisPlugin from "./infrastructure/redis/redis.plugin";
+import appPlugin from "./infrastructure/app.plugin";
 
-export function buildApp(){
+export function buildApp() {
     const app = Fastify({
         logger: true,
     });
 
     app.register(prismaPlugin)
     app.register(redisPlugin);
+    app.register(appPlugin)
 
-    app.get('/', async() => {
+    app.get('/', async () => {
         return {
             message: "Distrubuted task processing platform",
         };

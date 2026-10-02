@@ -6,3 +6,116 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRYING
+  CANCELLED
+  DEAD_LETTER
+}
+
+enum JobType {
+  CPU_TASK
+  IO_TASK
+  DOCUMENT_PROCESSING
+  WEBHOOK
+}
+
+enum AttemptStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum WorkerStatus {
+  HEALTHY
+  UNHEALTHY
+  DRAINING
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  jobs            Job[]
+  idempotencyKeys IdempotencyKey[]
+
+  @@map("users")
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  type        JobType
+  status      JobStatus @default(QUEUED)
+  priority    Int       @default(5)
+  payload     Json
+  result      Json?
+  attempts    Int       @default(0)
+  maxRetries  Int       @default(3) @map("max_retries")
+  scheduledAt DateTime? @map("scheduled_at")
+  workerId    String?   @map("worker_id")
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  worker          Worker?       @relation(fields: [workerId], references: [id])
+  jobAttempts     JobAttempt[]
+  idempotencyKeys IdempotencyKey[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([scheduledAt])
+  @@map("jobs")
+}
+
+model JobAttempt {
+  id            String        @id @default(cuid())
+  jobId         String        @map("job_id")
+  workerId      String?       @map("worker_id")
+  attemptNumber Int           @map("attempt_number")
+  status        AttemptStatus
+  error         String?
+  startedAt     DateTime      @map("started_at")
+  completedAt   DateTime?     @map("completed_at")
+
+  job    Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  worker Worker? @relation(fields: [workerId], references: [id])
+
+  @@index([jobId])
+  @@index([workerId])
+  @@map("job_attempts")
+}
+
+model Worker {
+  id            String       @id
+  status        WorkerStatus @default(HEALTHY)
+  lastHeartbeat DateTime     @map("last_heartbeat")
+  registeredAt  DateTime     @default(now()) @map("registered_at")
+
+  jobs        Job[]
+  jobAttempts JobAttempt[]
+
+  @@index([status])
+  @@index([lastHeartbeat])
+  @@map("workers")
+}
+
+model IdempotencyKey {
+  key       String   @id
+  userId    String   @map("user_id")
+  jobId     String   @map("job_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
