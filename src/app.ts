@@ -2,6 +2,8 @@ import Fastify from "fastify";
 import prismaPlugin from "./infrastructure/database/prisma.plugin";
 import redisPlugin from "./infrastructure/redis/redis.plugin";
 import appPlugin from "./infrastructure/app.plugin";
+import jwtPlugin from "./infrastructure/auth/jwt.plugin";
+import { authRoutes } from "./modules/auth/auth.route";
 
 export function buildApp() {
     const app = Fastify({
@@ -11,6 +13,10 @@ export function buildApp() {
     app.register(prismaPlugin)
     app.register(redisPlugin);
     app.register(appPlugin)
+    app.register(jwtPlugin)
+    app.register(authRoutes, {
+        prefix: '/api/v1/auth',
+    });
 
     app.get('/', async () => {
         return {
