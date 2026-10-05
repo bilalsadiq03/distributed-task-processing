@@ -4,6 +4,7 @@ import redisPlugin from "./infrastructure/redis/redis.plugin";
 import appPlugin from "./infrastructure/app.plugin";
 import jwtPlugin from "./infrastructure/auth/jwt.plugin";
 import { authRoutes } from "./modules/auth/auth.route";
+import { jobsRoutes } from './modules/jobs/jobs.routes';
 
 export function buildApp() {
     const app = Fastify({
@@ -16,6 +17,9 @@ export function buildApp() {
     app.register(jwtPlugin)
     app.register(authRoutes, {
         prefix: '/api/v1/auth',
+    });
+    app.register(jobsRoutes, {
+        prefix: '/api/v1/jobs',
     });
 
     app.get('/', async () => {
