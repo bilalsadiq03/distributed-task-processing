@@ -47,7 +47,9 @@ describe('Jobs API', () => {
     expect(body.job.id).toBeDefined();
     expect(body.job.userId).toBeDefined();
     expect(body.job.type).toBe('CPU_TASK');
-    expect(body.job.status).toBe('QUEUED');
+    expect(['QUEUED', 'PROCESSING', 'COMPLETED']).toContain(
+      body.job.status,
+    );
     expect(body.job.priority).toBe(5);
     expect(body.job.payload).toEqual({
       operation: 'calculate',

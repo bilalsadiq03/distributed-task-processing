@@ -26,4 +26,11 @@ export class JobsRepository {
       },
     });
   }
+
+  async assignWorker(jobId: string, workerId: string) {
+  return this.prisma.job.update({
+    where: { id: jobId },
+    data: { workerId },
+  });
+}
 }
