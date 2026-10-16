@@ -55,7 +55,8 @@ export const ModelName = {
   Job: 'Job',
   JobAttempt: 'JobAttempt',
   Worker: 'Worker',
-  IdempotencyKey: 'IdempotencyKey'
+  IdempotencyKey: 'IdempotencyKey',
+  OutboxEvent: 'OutboxEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -134,6 +135,22 @@ export const IdempotencyKeyScalarFieldEnum = {
 } as const
 
 export type IdempotencyKeyScalarFieldEnum = (typeof IdempotencyKeyScalarFieldEnum)[keyof typeof IdempotencyKeyScalarFieldEnum]
+
+
+export const OutboxEventScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  eventType: 'eventType',
+  payload: 'payload',
+  createdAt: 'createdAt',
+  publishedAt: 'publishedAt',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  lockedBy: 'lockedBy',
+  lockedUntil: 'lockedUntil'
+} as const
+
+export type OutboxEventScalarFieldEnum = (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum]
 
 
 export const SortOrder = {

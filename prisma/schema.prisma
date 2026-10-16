@@ -119,3 +119,21 @@ model IdempotencyKey {
   @@index([expiresAt])
   @@map("idempotency_keys")
 }
+
+model OutboxEvent {
+  id          String    @id @default(cuid())
+  jobId       String    @map("job_id")
+  eventType   String    @map("event_type")
+  payload     Json
+  createdAt   DateTime  @default(now()) @map("created_at")
+  publishedAt DateTime? @map("published_at")
+  attempts    Int       @default(0)
+  lastError   String?   @map("last_error")
+  lockedBy    String?   @map("locked_by")
+  lockedUntil DateTime? @map("locked_until")
+
+  @@index([publishedAt, createdAt])
+  @@index([lockedUntil])
+  @@index([jobId])
+  @@map("outbox_events")
+}

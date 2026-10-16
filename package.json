@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "worker": "tsx src/worker/worker.ts",
+    "monitor": "tsx src/worker/monitor.ts",
+    "dispatcher": "tsx src/infrastructure/queue/outbox-dispatcher.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "vitest run",

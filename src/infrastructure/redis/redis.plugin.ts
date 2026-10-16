@@ -1,5 +1,6 @@
 import fp from 'fastify-plugin';
 import { createClient, RedisClientType } from 'redis';
+import { getRedisConfig } from './redis.config.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -8,8 +9,7 @@ declare module 'fastify' {
 }
 
 export default fp(async (app) => {
-  const host = process.env.REDIS_HOST ?? 'localhost';
-  const port = Number(process.env.REDIS_PORT ?? 6379);
+  const { host, port } = getRedisConfig();
 
   const redis = createClient({
     socket: {
@@ -23,6 +23,7 @@ export default fp(async (app) => {
   });
 
   await redis.connect();
+  app.log.info({ host, port }, 'Redis connected');
 
   app.decorate('redis', redis);
 

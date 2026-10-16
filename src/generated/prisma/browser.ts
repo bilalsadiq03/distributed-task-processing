@@ -42,3 +42,8 @@ export type Worker = Prisma.WorkerModel
  * 
  */
 export type IdempotencyKey = Prisma.IdempotencyKeyModel
+/**
+ * Model OutboxEvent
+ * 
+ */
+export type OutboxEvent = Prisma.OutboxEventModel

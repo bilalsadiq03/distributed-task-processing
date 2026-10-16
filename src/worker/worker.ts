@@ -1,3 +1,4 @@
+
 import 'dotenv/config';
 
 import { PrismaService } from '../infrastructure/database/prisma.service.js';
@@ -8,13 +9,13 @@ import { WorkerService } from './worker.service.js';
 import { WorkerRepository } from './worker.repository.js';
 import { WorkerHeartbeat } from './worker.heartbeat.js';
 import { randomUUID } from 'node:crypto';
+import { getRedisConfig } from '../infrastructure/redis/redis.config.js';
 
 const startWorker = async () => {
   const prisma = new PrismaService();
   await prisma.connect();
 
-  const host = process.env.REDIS_HOST ?? 'localhost';
-  const port = Number(process.env.REDIS_PORT ?? 6379);
+  const { host, port } = getRedisConfig();
 
   const redis = createClient({
     socket: {
@@ -28,9 +29,9 @@ const startWorker = async () => {
   });
 
   await redis.connect();
+  console.log(`[Worker] Connected to Redis at ${host}:${port}.`);
 
   const workerId = `worker-${randomUUID()}`;
-
   const workerRepository = new WorkerRepository(prisma);
 
   const heartbeat = new WorkerHeartbeat(
@@ -40,32 +41,72 @@ const startWorker = async () => {
 
   await heartbeat.start();
 
-  const queue = new JobQueue(redis);
+  const queue = new JobQueue(redis, workerId);
+  const requeued = await queue.requeueInFlight();
+
+  if (requeued > 0) {
+    console.warn(
+      `[Worker] Requeued ${requeued} in-flight Redis job(s) on startup.`,
+    );
+  }
+
   const executor = new TaskExecutor();
 
   const worker = new WorkerService(
     prisma,
     queue,
     executor,
+    workerId,
   );
 
-  const shutdown = async () => {
-    console.log('Shutting down worker...');
+  // Start exactly one worker loop and retain its promise.
+  const workerLoop = worker.start();
 
-    await heartbeat.stop();
-    await redis.quit();
-    await prisma.disconnect();
+  let shutdownPromise: Promise<void> | undefined;
 
-    process.exit(0);
+  const shutdown = (): Promise<void> => {
+    if (shutdownPromise) return shutdownPromise;
+
+    shutdownPromise = (async () => {
+      console.log('[Worker] Shutting down gracefully...');
+
+      // Stop accepting new jobs and wait for the active job/loop.
+      worker.requestStop();
+      await workerLoop;
+
+      // Close resources only after the loop has exited.
+      await heartbeat.stop();
+
+      if (redis.isOpen) {
+        await redis.quit();
+      }
+
+      await prisma.disconnect();
+
+      console.log('[Worker] Shutdown complete.');
+    })();
+
+    return shutdownPromise;
   };
 
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
+  process.once('SIGINT', () => {
+    void shutdown().catch((error) => {
+      console.error('[Worker] Shutdown failed:', error);
+      process.exitCode = 1;
+    });
+  });
 
-  await worker.start();
+  process.once('SIGTERM', () => {
+    void shutdown().catch((error) => {
+      console.error('[Worker] Shutdown failed:', error);
+      process.exitCode = 1;
+    });
+  });
+
+  await workerLoop;
 };
 
 startWorker().catch((error) => {
   console.error('Worker failed to start:', error);
-  process.exit(1);
+  process.exitCode = 1;
 });

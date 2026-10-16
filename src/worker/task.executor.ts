@@ -1,8 +1,31 @@
+
 export class TaskExecutor {
   async execute(
     type: string,
     payload: Record<string, unknown>,
   ) {
+    // Development/testing hook to simulate task failures.
+    if (payload.simulateFailure === true) {
+      throw new Error('Simulated task failure for retry testing');
+    }
+
+    // Development/testing hook to simulate a long-running task.
+    // Useful for testing worker crashes and job recovery.
+    if (typeof payload.simulateDelayMs === 'number') {
+      const delayMs = Math.min(
+        Math.max(payload.simulateDelayMs, 0),
+        120_000,
+      );
+
+      console.log(
+        `[TaskExecutor] Simulating a delay of ${delayMs}ms for ${type}.`,
+      );
+
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, delayMs);
+      });
+    }
+
     switch (type) {
       case 'CPU_TASK':
         return this.executeCpuTask(payload);

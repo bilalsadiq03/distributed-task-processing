@@ -17,10 +17,7 @@ export function createContainer(
 
   const jobsRepository = new JobsRepository(prisma);
 
-  const jobsService = new JobsService(
-    jobsRepository,
-    jobQueue,
-  );
+  const jobsService = new JobsService(jobsRepository);
 
   const authRepository = new AuthRepository(prisma);
   const authService = new AuthService(authRepository);

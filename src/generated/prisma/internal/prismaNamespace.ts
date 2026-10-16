@@ -401,7 +401,8 @@ export const ModelName = {
   Job: 'Job',
   JobAttempt: 'JobAttempt',
   Worker: 'Worker',
-  IdempotencyKey: 'IdempotencyKey'
+  IdempotencyKey: 'IdempotencyKey',
+  OutboxEvent: 'OutboxEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -417,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "job" | "jobAttempt" | "worker" | "idempotencyKey"
+    modelProps: "user" | "job" | "jobAttempt" | "worker" | "idempotencyKey" | "outboxEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -791,6 +792,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OutboxEvent: {
+      payload: Prisma.$OutboxEventPayload<ExtArgs>
+      fields: Prisma.OutboxEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OutboxEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OutboxEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        findFirst: {
+          args: Prisma.OutboxEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OutboxEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        findMany: {
+          args: Prisma.OutboxEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
+        }
+        create: {
+          args: Prisma.OutboxEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        createMany: {
+          args: Prisma.OutboxEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OutboxEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
+        }
+        delete: {
+          args: Prisma.OutboxEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        update: {
+          args: Prisma.OutboxEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.OutboxEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OutboxEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OutboxEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.OutboxEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        aggregate: {
+          args: Prisma.OutboxEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOutboxEvent>
+        }
+        groupBy: {
+          args: Prisma.OutboxEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutboxEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OutboxEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutboxEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -890,6 +965,22 @@ export const IdempotencyKeyScalarFieldEnum = {
 } as const
 
 export type IdempotencyKeyScalarFieldEnum = (typeof IdempotencyKeyScalarFieldEnum)[keyof typeof IdempotencyKeyScalarFieldEnum]
+
+
+export const OutboxEventScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  eventType: 'eventType',
+  payload: 'payload',
+  createdAt: 'createdAt',
+  publishedAt: 'publishedAt',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  lockedBy: 'lockedBy',
+  lockedUntil: 'lockedUntil'
+} as const
+
+export type OutboxEventScalarFieldEnum = (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1227,6 +1318,7 @@ export type GlobalOmitConfig = {
   jobAttempt?: Prisma.JobAttemptOmit
   worker?: Prisma.WorkerOmit
   idempotencyKey?: Prisma.IdempotencyKeyOmit
+  outboxEvent?: Prisma.OutboxEventOmit
 }
 
 /* Types for Logging */
